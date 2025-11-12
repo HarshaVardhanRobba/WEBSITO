@@ -1,21 +1,25 @@
-// server component
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { getQueryClient, trpc } from '../trpc/server';
-import { Suspense } from 'react';
-// Update this import to match the actual export from '../trpc/client'
-import Client from './client';
+// Page.tsx
+"use client";
 
-export default async function Home() {
-  const queryClient = getQueryClient();
+import { Button } from "@/components/ui/button";
+import { useTRPC } from "@/trpc/client";
+import React from "react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-  // await the prefetch so the cache is populated before we dehydrate
-  await queryClient.prefetchQuery(trpc.createAI.queryOptions({ text: 'Harsha - hello' }));
+const Page = () => {
+  const trpc = useTRPC(); // get the trpc hooks from context
+  const invoke = useMutation(trpc.invoke.mutationOptions({
+    onSuccess: () => {
+      toast.success("Invocation success")
+    }
+  }));
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Client />
-      </Suspense>
-    </HydrationBoundary>
+    <div className="text-3xl font-bold underline">
+      <Button onClick={() => invoke.mutate({ text: "john" })}>Background</Button>
+    </div>
   );
-}
+};
+
+export default Page;
