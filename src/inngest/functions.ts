@@ -8,7 +8,7 @@ export const helloWorld = inngest.createFunction(
   async ({ event, step }) => {
     const summerizerAgent = createAgent({
       name: 'Summmerizer',
-      system: 'You are an expert summarizer...',
+      system: 'You are an expert summarizer..',
       model: gemini({
         model: "gemini-2.0-flash",
         apiKey: process.env.GEMINI_API_KEY,
