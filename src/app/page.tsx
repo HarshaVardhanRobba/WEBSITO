@@ -3,12 +3,14 @@
 
 import { Button } from "@/components/ui/button";
 import { useTRPC } from "@/trpc/client";
-import React from "react";
+import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 const Page = () => {
   const trpc = useTRPC(); // get the trpc hooks from context
+  const [value, setValue] = useState("");
   const invoke = useMutation(trpc.invoke.mutationOptions({
     onSuccess: () => {
       toast.success("Invocation success")
@@ -17,7 +19,11 @@ const Page = () => {
 
   return (
     <div className="text-3xl font-bold underline">
-      <Button onClick={() => invoke.mutate({ text: "john" })}>Background</Button>
+      <Input 
+        value={value}
+        onChange={(e) => setValue(e.target.value)} 
+      />
+      <Button onClick={() => invoke.mutate({ value: value })}>Background</Button>
     </div>
   );
 };
