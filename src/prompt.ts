@@ -76,6 +76,12 @@ BEHAVIORAL RULES FOR THE AGENT:
 • Use TypeScript and named exports for all components.  
 • Provide sensible default props and ARIA attributes.
 
+IMPORTANT (enforce): 
+- Do not spawn additional sub-runs. Complete this task in this single invocation unless explicitly instructed.
+- If you need to call another service, return a short plan (max 40 tokens). Do not call the model recursively.
+- Max output tokens: 400. Keep replies concise.
+
+
 EXAMPLE VISUAL NOTES (for guidance, not code):
 • Background: deep indigo → violet gradient with animated neon blobs (cyan / magenta) and faint particle drift.  
 • Cards: translucent white/black with 10–14% opacity, soft backdrop blur, neon rim (thin border glow).  
