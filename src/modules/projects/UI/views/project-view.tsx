@@ -1,19 +1,24 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { 
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup, 
 } from "@/components/ui/resizable"
 import { MessagesContainer } from "../components/message-container";
+import { Fragment } from "@/generated/prisma/client";
+import { ProjectHeader } from "../components/project-header";
 
 
 interface Props {
     projectId: string;
+    activeFragment: Fragment | null;
+    setActiveFragment: (fragment: Fragment | null) => void;
 }
 
 export const ProjectView = ({ projectId }: Props) => {
+    const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
     // Client-side diagnostic log to catch undefined props during hydration
     React.useEffect(() => {
         console.log('[Client] ProjectView mounted, projectId =', projectId);
@@ -27,8 +32,13 @@ export const ProjectView = ({ projectId }: Props) => {
                 minSize={20}
                 className="flex flex-col min-h-0"
                 >
+                    <Suspense fallback={<p>Loading project...</p>}/>
+                    <ProjectHeader projectId={projectId} />
                     <Suspense fallback={<div>Loading messages...</div>}>
-                        <MessagesContainer projectId={projectId}/>
+                        <MessagesContainer projectId={projectId}
+                        activeFragment={activeFragment}
+                        setActiveFragment={setActiveFragment}
+                        />
                     </Suspense>
                     
                 </ResizablePanel>
