@@ -46,6 +46,7 @@ export function FragmentWeb({ data }: fragmentWebProps) {
                         disabled={!data.sandboxUrl|| copied}
                         className="flex-1 justify-start text-start font-normal"
                     >
+                        {copied ? "Copied!" : "Copy link"}
                         <span className="truncate">
                             {data.sandboxUrl}
                         </span>
