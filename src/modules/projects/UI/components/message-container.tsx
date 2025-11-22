@@ -16,6 +16,7 @@ interface Props {
 export const MessagesContainer = ({ projectId, activeFragment, setActiveFragment }: Props) => {
     
     const bottomRef = useRef<HTMLDivElement>(null);
+    const lastAssistantMessageIdRef = useRef<string | null>(null);
     const trpc = useTRPC();
     // Log server/client call input for diagnostics (appears in server log during SSR and browser console on client)
 
@@ -25,10 +26,11 @@ export const MessagesContainer = ({ projectId, activeFragment, setActiveFragment
     }));
 
     useEffect(() => {
-        const lastAssistantMessagewithFragment = messages.findLast((message) => message.role === "ASSISTANT" && !!message.fragment,);
+        const lastAssistantMessage = messages.findLast((message) => message.role === "ASSISTANT");
 
-        if(lastAssistantMessagewithFragment) {
-            setActiveFragment(lastAssistantMessagewithFragment.fragment);
+        if (lastAssistantMessage?.fragment && lastAssistantMessageIdRef.current !== lastAssistantMessage.id) {
+            setActiveFragment(lastAssistantMessage.fragment);
+            lastAssistantMessageIdRef.current = lastAssistantMessage.id;
         }
     }, [messages, setActiveFragment] );
 

@@ -38,6 +38,7 @@ const FileBreadCrumb = ({ filepath }: FileBreadCrumbProps) => {
   const pathsegments = filepath.split("/");
   const maxSegments = 4;
 
+
   const renderBreadCrumbItems = () => {
     if (pathsegments.length <= maxSegments) {
       return pathsegments.map((segment, index) => {
