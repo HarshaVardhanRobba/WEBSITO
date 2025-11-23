@@ -1,4 +1,5 @@
 // app/layout.tsx;
+import { Navbar } from "@/modules/home/ui/components/navbar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="bg-white">
       <body className="min-h-screen font-sans text-slate-900 antialiased">
+        <Navbar />
         <div
             className="absolute inset-0 -z-10 h-full w-full bg-white bg-[radial-gradient(#dadde2_1px,transparent_1px)]
             [bg-size:16px_16px]dark:bg-[radial-gradient(#393e4a_1px,transparent_1px)]"/>

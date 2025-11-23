@@ -16,6 +16,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FileExplorer } from "@/components/file-explorer";
 import { Hint } from "@/components/hint";
+import { UserControl } from "@/components/user-control";
 
 
 interface Props {
@@ -78,6 +79,7 @@ export const ProjectView = ({ projectId }: Props) => {
                                             <Crown/> Upgrade to Ultra 
                                         </Link>
                                     </Button>
+                                    <UserControl showname = {false}/>
                                 </div>
                             </div>
                             <TabsContent value="preview" className="flex flex-col h-full gap-y-0">

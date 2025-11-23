@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import React, { useState, KeyboardEvent } from "react";
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
+import { useUser } from "@clerk/nextjs";
 
 const templateOptions = [
   "Build a Netflix clone",
@@ -25,28 +25,44 @@ const templateOptions = [
 export default function Page() {
   const router = useRouter();
   const trpc = useTRPC();
-  const { data: projects } = useQuery(trpc.projects.getMany.queryOptions());
-  const sorted = [...(projects ?? [])].sort(
-  (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-);
-
+  const { user } = useUser();
   const [prompt, setPrompt] = useState("");
+
+  // Only fetch projects if the user is signed in
+  const { data: projects } = useQuery({
+    ...trpc.projects.getMany.queryOptions(),
+    enabled: !!user,
+  });
+
+  const sorted =
+    projects?.toSorted(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    ) ?? [];
 
   const { mutate: createProject, isPending } = useMutation(
     trpc.projects.create.mutationOptions({
-      onError: (err: unknown) =>
+      onError: (err: unknown) => {
+        console.error(err);
         toast.error(
           err instanceof Error
             ? err.message
             : typeof err === "string"
             ? err
             : "Failed to create project"
-        ),
+        );
+      },
       onSuccess: (data: { id: string }) => router.push(`/projects/${data.id}`),
     })
   );
 
   const handleSubmit = () => {
+    // If user is not signed in, redirect to sign-in page
+    if (!user) {
+      router.push("/sign-in");
+      return;
+    }
+
     if (!prompt.trim()) {
       toast.error("Please describe what you want to build.");
       return;
@@ -64,10 +80,17 @@ export default function Page() {
   };
 
   return (
-    <main className="w-full">
-      {/* Hero / big heading */}
+    <main className="w-full py-16">
+      {/* Hero */}
       <header className="max-w-4xl mx-auto text-center mt-6">
-        <h1 className="text-5xl font-extrabold tracking-tight text-slate-900">
+        <Image
+          src="/logo.svg"
+          alt="websito logo"
+          width={40}
+          height={40}
+          className="mx-auto"
+        />
+        <h1 className="text-5xl font-extrabold tracking-tight bg-linear-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
           Build something with Vibe
         </h1>
         <p className="mt-4 text-lg text-slate-500">
@@ -77,12 +100,11 @@ export default function Page() {
 
       {/* Big prompt card */}
       <section className="max-w-4xl mx-auto mt-10">
-        <div className="rounded-xl border border-slate-200 bg-white/75 p-6 shadow-sm">
-          <label className="text-slate-500 block mb-3">
+        <div className="rounded-xl border border-slate-200 bg-white/75 p-6 shadow-sm py-4">
+          <label className="text-slate-500 block mb-3 ">
             What would you like to build?
           </label>
 
-          {/* Large textarea */}
           <div className="relative">
             <textarea
               value={prompt}
@@ -91,12 +113,10 @@ export default function Page() {
               placeholder="Try: Build a simple weather app with React and Tailwind"
               className="w-full min-h-[150px] resize-none rounded-lg border border-slate-100 bg-white p-4 placeholder:text-slate-300 text-slate-800 text-base focus:outline-none focus:ring-2 focus:ring-slate-200"
             />
-            {/* small enter hint */}
             <div className="absolute bottom-3 left-4 text-xs text-slate-400">
               ⌘ / Ctrl + Enter to submit
             </div>
 
-            {/* circular submit icon button on right */}
             <div className="absolute right-4 bottom-3">
               <button
                 onClick={handleSubmit}
@@ -109,8 +129,8 @@ export default function Page() {
             </div>
           </div>
 
-          {/* chips row */}
-          <div className="mt-6 flex flex-wrap gap-3">
+          {/* chips */}
+          <div className="mt-6 flex flex-wrap gap-3 justify-end">
             {templateOptions.map((t) => (
               <button
                 key={t}
@@ -124,15 +144,15 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Saved Vibes section */}
+      {/* Saved Vibes */}
       <section className="max-w-5xl mx-auto mt-12">
         <div className="rounded-2xl bg-white p-8 border border-slate-100 shadow-sm">
           <h2 className="text-2xl font-semibold text-slate-900 mb-6">
-            Saved Vibes
+            {user ? `${user.firstName} Projects` : "Your Projects"}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {projects && projects.length === 0 && (
+            {user && projects && projects.length === 0 && (
               <div className="col-span-full text-center">
                 <p className="text-sm text-muted-foreground">
                   NO PROJECTS FOUND
@@ -140,42 +160,45 @@ export default function Page() {
               </div>
             )}
 
-            {sorted?.slice(0, 6).map((project) => (
-                <Button
-                  key={project.id}
-                  variant="outline"
-                  className="font-normal h-auto justify-start w-full text-start p-4"
-                  asChild
-                >
-                  <Link href={`/projects/${project.id}`}>
-                    <div className="flex items-center gap-x-4">
-                      <Image
-                        src="/logo.svg"
-                        alt={project.name}
-                        width={40}
-                        height={40}
-                        className="object-contain"
-                      />
-                      <div className="flex-1">
-                        {/* Gradient Text */}
-                        <h3 className="text-sm font-semibold leading-none bg-linear-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">
-                          {project.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(project.updatedAt), {
-                            addSuffix: true,
-                          })}
-                        </p>
+            {user &&
+              sorted
+                ?.slice(0, 6)
+                .map((project) => (
+                  <Button
+                    key={project.id}
+                    variant="outline"
+                    className="font-normal h-auto justify-start w-full text-left p-4"
+                    asChild
+                  >
+                    <Link href={`/projects/${project.id}`}>
+                      <div className="flex items-center gap-x-4">
+                        <Image
+                          src="/logo.svg"
+                          alt={project.name}
+                          width={40}
+                          height={40}
+                          className="object-contain"
+                        />
+                        <div className="flex-1">
+                          {/* Gradient Background Pill */}
+                          <h3 className="inline-block text-sm font-semibold leading-none text-white rounded-md px-2 py-1 bg-linear-to-r from-blue-500 to-red-500">
+                            {project.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(
+                              new Date(project.updatedAt),
+                              { addSuffix: true }
+                            )}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                </Button>
-              ))}
+                    </Link>
+                  </Button>
+                ))}
           </div>
         </div>
       </section>
 
-      {/* subtle footer spacer */}
       <div className="h-24" />
     </main>
   );

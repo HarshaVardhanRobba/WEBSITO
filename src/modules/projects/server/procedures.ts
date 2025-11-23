@@ -1,4 +1,4 @@
-import { baseProcedure, createTRPCRouter } from "@/trpc/init";
+import { protectedProcedure, createTRPCRouter } from "@/trpc/init";
 import { z } from "zod";
 import { inngest } from "@/inngest/client";
 import prisma from "../../../../lib/prisma";
@@ -6,31 +6,35 @@ import { generateSlug } from "random-word-slugs"
 import { TRPCError } from "@trpc/server";
 
 export const projectRouter = createTRPCRouter({
-    getOne: baseProcedure
+    getOne: protectedProcedure
     .input(z.object({
         id: z.string().min(1, {message: "Project Id REQUIRED"}).max(300, {message: "Project Id too long, make it short"})
     }
 ))
-    .query(async({ input}) => {
+    .query(async({ input, ctx}) => {
         const Exisitngprojects = await prisma.project.findUnique({
             where: {
                 id: input.id,
+                userId: ctx.auth.userId
             },
         });
         if (!Exisitngprojects) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found"});
         }
         return Exisitngprojects;
-    }),getMany: baseProcedure
-    .query(async() => {
+    }),getMany: protectedProcedure
+    .query(async({ ctx }) => {
         const projects = await prisma.project.findMany({
+            where: {
+                userId: ctx.auth.userId,
+            },
             orderBy: {
                 updatedAt: "asc"
             },
         });
         return projects;
     }),
-    create: baseProcedure
+    create: protectedProcedure
     .input(
         z.object({
             value: z.string()
@@ -38,9 +42,10 @@ export const projectRouter = createTRPCRouter({
             .max(10000, { message: "Message cannot be longer than 10,000 characters" }),
         })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
         const createdProject = await prisma.project.create({
             data: {
+                userId: ctx.auth.userId,
                 name: generateSlug(2, {
                     format: "kebab",
                 }),
