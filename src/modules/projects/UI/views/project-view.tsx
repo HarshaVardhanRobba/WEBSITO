@@ -73,7 +73,7 @@ export const ProjectView = ({ projectId }: Props) => {
                                     </Hint>
                                 </TabsList>
                                 <div className="ml-auto flex items-center gap-x-2 cursor-pointer">
-                                    <Button asChild size="sm" variant="default">
+                                    <Button asChild size="sm" variant="tertiary">
                                         <Link href="/pricing">
                                             <Crown/> Upgrade to Ultra 
                                         </Link>
