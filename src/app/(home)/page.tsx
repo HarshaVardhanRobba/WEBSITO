@@ -42,7 +42,11 @@ export default function Page() {
 
   const { mutate: createProject, isPending } = useMutation(
     trpc.projects.create.mutationOptions({
-      onError: (err: unknown) => {
+      onSuccess: (data: { id: string }) => {
+        trpc.usage.status.queryOptions();
+        router.push(`/projects/${data.id}`);
+      },
+      onError: (err) => {
         console.error(err);
         toast.error(
           err instanceof Error
@@ -51,8 +55,11 @@ export default function Page() {
             ? err
             : "Failed to create project"
         );
+
+        if (err.data?.code === "TOO_MANY_REQUESTS") {
+          router.push("/pricing");
+        }
       },
-      onSuccess: (data: { id: string }) => router.push(`/projects/${data.id}`),
     })
   );
 

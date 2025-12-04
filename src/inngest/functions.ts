@@ -1,5 +1,5 @@
 import { inngest } from "./client";
-import { createAgent, createNetwork, createTool, gemini, type Tool } from '@inngest/agent-kit';
+import { createAgent, createNetwork, createTool, gemini, } from '@inngest/agent-kit';
 import { serve } from "inngest/next"; // or your framework
 import { Sandbox } from "@e2b/code-interpreter"
 import { getSandbox, last_assistant_text_agent_content } from "./utils";
@@ -70,7 +70,7 @@ export const codeagentFuntion = inngest.createFunction(
             }),
             handler: async (
               { files },
-              { step, network }: Tool.Options<AgentState>
+              { step, network }
             ) => {
               const newfiles = await step?.run("CreateorUpdateFiles", async () => {
                 try {

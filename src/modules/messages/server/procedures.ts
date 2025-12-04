@@ -3,6 +3,7 @@ import { z } from "zod";
 import { inngest } from "@/inngest/client";
 import prisma from "../../../../lib/prisma";
 import { TRPCError } from "@trpc/server";
+import { consumeCredits } from "@/lib/usage";
 
 export const messageRouter = createTRPCRouter({
     getMany: protectedProcedure
@@ -50,6 +51,16 @@ export const messageRouter = createTRPCRouter({
         });
         if (!existingproject) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Project not found"});
+        }
+
+        try {
+            await consumeCredits();
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new TRPCError({ code: "UNAUTHORIZED", message: error.message});
+            } else {
+                throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "you have run out of credits"});
+            }
         }
 
         const newMessage =await prisma.message.create({
