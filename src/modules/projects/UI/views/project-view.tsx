@@ -21,8 +21,6 @@ import { UserControl } from "@/components/user-control";
 
 interface Props {
     projectId: string;
-    activeFragment: Fragment | null;
-    setActiveFragment: (fragment: Fragment | null) => void;
 }
 
 export const ProjectView = ({ projectId }: Props) => {

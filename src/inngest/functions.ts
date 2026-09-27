@@ -1,5 +1,5 @@
 import { inngest } from "./client";
-import { createAgent, createNetwork, createTool, gemini, } from '@inngest/agent-kit';
+import { createAgent, createNetwork, createTool, openai, } from '@inngest/agent-kit';
 import { serve } from "inngest/next"; // or your framework
 import { Sandbox } from "@e2b/code-interpreter"
 import { getSandbox, last_assistant_text_agent_content } from "./utils";
@@ -13,21 +13,29 @@ interface AgentState {
 }
 
 export const codeagentFuntion = inngest.createFunction(
-  { id: "code-agent" },
-  { event: "code-agent/run" },
+  { id: "code-agent", triggers: [{ event: "code-agent/run" }] },
   async ({ event, step }) => {
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create("Lovable1-nextjs-harsha");
       return sandbox.sandboxId
     })
 
+    const activeKey = process.env.OPENAI_API_KEY ?? '';
+    if (!activeKey) {
+      console.warn('No OpenAI API key found in env. Set OPENAI_API_KEY');
+    } else {
+      // Mask the key when logging to avoid leaking secrets
+      const masked = activeKey.length > 8 ? `${activeKey.slice(0,4)}...${activeKey.slice(-4)}` : '***masked***';
+      console.warn(`Using OPENAI_API_KEY (${masked})`);
+    }
+
     const codeAgent = createAgent<AgentState>({
       name: 'Code-agent',
       description: 'Code-agent',
       system: PROMPT,
-      model: gemini({
-        model: "gemini-2.0-flash",
-        apiKey: process.env.GEMINI_API_KEY,
+      model: openai({
+        model: "gpt-4o-mini",
+        apiKey: process.env.OPENAI_API_KEY,
       }),
       tools: [
         createTool({

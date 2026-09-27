@@ -2,43 +2,26 @@ import { PrismaClient } from "../src/generated/prisma/client";
 
 const prisma = new PrismaClient();
 
-const userData: Array<{
+const projectData: Array<{
   name: string;
-  email: string;
-  posts: {
+  userId: string;
+  messages: {
     create: Array<{
-      title: string;
       content: string;
-      published?: boolean;
+      role: "USER" | "ASSISTANT";
+      type: "RESULT" | "ERROR";
     }>;
   };
 }> = [
   {
-    name: "Alice",
-    email: "alice@prisma.io",
-    posts: {
+    name: "sample-project",
+    userId: "seed-user",
+    messages: {
       create: [
         {
-          title: "Join the Prisma Discord",
-          content: "https://pris.ly/discord",
-          published: true,
-        },
-        {
-          title: "Prisma on YouTube",
-          content: "https://pris.ly/youtube",
-        },
-      ],
-    },
-  },
-  {
-    name: "Bob",
-    email: "bob@prisma.io",
-    posts: {
-      create: [
-        {
-          title: "Follow Prisma on Twitter",
-          content: "https://www.twitter.com/prisma",
-          published: true,
+          content: "Build a landing page",
+          role: "USER",
+          type: "RESULT",
         },
       ],
     },
@@ -46,8 +29,8 @@ const userData: Array<{
 ];
 
 export async function main() {
-  for (const u of userData) {
-    await prisma.user.create({ data: u });
+  for (const p of projectData) {
+    await prisma.project.create({ data: p });
   }
 }
 
