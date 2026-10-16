@@ -100,8 +100,8 @@ export const MessageForm = ({ projectId }: Props) => {
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className={cn(
-          "relative border p-4 pt-1 rounded-xl bg-sidebar dark:bg-sidebar transition-all",
-          isFocused && "shadow-xs",
+          "relative border border-[rgba(14,14,16,0.1)] p-4 pt-2 rounded-2xl bg-white transition-all shadow-[0_10px_30px_-20px_rgba(14,14,16,0.2)]",
+          isFocused && "border-[rgba(14,14,16,0.2)]",
           showUsage && "rounded-t-none"
         )}
       >
@@ -116,8 +116,8 @@ export const MessageForm = ({ projectId }: Props) => {
               onBlur={() => setIsFocused(false)}
               minRows={2}
               maxRows={8}
-              className="pt-4 resize-none bg-transparent outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-              placeholder="what you wanna build bro?"
+              className="pt-3 resize-none bg-transparent outline-none focus-visible:ring-0 focus-visible:ring-offset-0 text-ink placeholder:text-[rgba(14,14,16,0.35)]"
+              placeholder="Describe your next change &mdash; a page, a tweak, a whole feature."
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                   e.preventDefault();
@@ -134,21 +134,21 @@ export const MessageForm = ({ projectId }: Props) => {
             </kbd>
             &nbsp;to send
           </div>
-          <Button
+          <button
             disabled={isButtonDisabled}
-            variant="ghost"
-            className={cn(
-              "h-8 w-8 rounded-full",
-              isButtonDisabled && "bg-muted-foreground border"
-            )}
             type="submit"
+            aria-label="Send message"
+            className={cn(
+              "btn-tangerine h-9 w-9 rounded-full grid place-items-center",
+              isButtonDisabled && "opacity-50 cursor-not-allowed"
+            )}
           >
             {isPending ? (
               <Loader2Icon className="h-4 w-4 animate-spin" />
             ) : (
-              <ArrowUpIcon className="cursor-pointer h-4 w-4" />
+              <ArrowUpIcon className="h-4 w-4" />
             )}
-          </Button>
+          </button>
         </div>
       </form>
     </FormProvider>

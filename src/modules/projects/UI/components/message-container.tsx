@@ -66,10 +66,6 @@ export const MessagesContainer = ({ projectId, activeFragment, setActiveFragment
       </div>
     </div>
 
-    {/* decorative overlay as a sibling so it doesn't wrap the form */}
-    <div className="absolute pointer-events-none left-0 right-0 -bottom-24 h-24 bg-linear-to-t from-background/90 to-transparent" />
-
-    {/* footer area with interactive form */}
     <div className="relative p-3 pt-1 bg-transparent">
       <MessageForm projectId={projectId} />
     </div>
