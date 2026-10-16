@@ -1,188 +1,261 @@
-"use client"
+"use client";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Icon } from "@iconify/react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-// Clerk components
-import { SignedIn } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, PricingTable as ClerkPricingTable } from "@clerk/nextjs";
 import { CheckoutButton } from "@clerk/nextjs/experimental";
-import { PricingTable as ClerkPricingTable } from "@clerk/nextjs";
+
+const STARTER_PLAN_ID = "cplan_starter_example";
+const PRO_PLAN_ID = "cplan_pro_example";
+
+const faqs = [
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes. Plans are month-to-month or annual. Cancel from your account; access continues until the end of the current period.",
+  },
+  {
+    q: "Do I own the code my project generates?",
+    a: "Yes. Projects you build with Websito are yours. Export the source whenever you want.",
+  },
+  {
+    q: "What happens if I hit the plan limit?",
+    a: "You'll be prompted to upgrade before you lose access. Existing projects stay available on every plan.",
+  },
+  {
+    q: "Is there a free tier?",
+    a: "Yes. You can build a limited number of projects before a paid plan is required.",
+  },
+];
+
+const starterFeatures = [
+  "Unlimited drafts",
+  "Live preview in-browser",
+  "Export full source",
+  "Community support",
+];
+
+const proFeatures = [
+  "Everything in Starter",
+  "Higher project limits",
+  "Priority generation queue",
+  "Email support",
+  "Early access to new models",
+];
 
 export default function PricingPage() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  // Replace these with your real Clerk plan IDs (found in Clerk Dashboard -> Billing -> Plans)
-  const STARTER_PLAN_ID = "cplan_starter_example";   // monthly/annual variants in Clerk can share one plan id; use `planPeriod` to choose month/annual
-  const PRO_PLAN_ID = "cplan_pro_example";
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const root = rootRef.current;
+    if (!root) return;
+    const ctx = gsap.context(() => {
+      gsap.from(".price-hero > *", {
+        opacity: 0,
+        y: 24,
+        duration: 0.7,
+        stagger: 0.08,
+        ease: "power3.out",
+      });
+      gsap.from(".price-card", {
+        opacity: 0,
+        y: 32,
+        duration: 0.8,
+        stagger: 0.12,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".price-cards", start: "top 80%" },
+      });
+      gsap.from(".faq-row", {
+        opacity: 0,
+        y: 20,
+        duration: 0.6,
+        stagger: 0.08,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".faq-wrap", start: "top 80%" },
+      });
+    }, root);
+    return () => ctx.revert();
+  }, []);
+
+  const period = billing === "monthly" ? "month" : "annual";
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0b1220] text-slate-900 dark:text-slate-100">
-      <header className="max-w-7xl mx-auto px-6 py-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-linear-to-br from-rose-500 to-yellow-400 flex items-center justify-center text-white font-semibold">K</div>
-          <div>
-            <span className="font-bold">Harsha</span>
-            <div className="text-xs text-slate-500 dark:text-slate-400 -mt-1">Websito Billing</div>
-          </div>
-        </div>
-        <nav className="hidden md:flex items-center gap-4">
-          <Link href="/" className="text-sm hover:underline">Home</Link>
-          <a href="/menu" className="text-sm hover:underline">Menu</a>
-          <a href="/contact" className="text-sm hover:underline">Contact</a>
-          <Link href="../sign-in">
-            <Button size="sm">Sign in</Button>
-          </Link>
-        </nav>
-      </header>
+    <div ref={rootRef} className="px-6 pt-36 md:pt-40 pb-28">
+      <section className="price-hero mx-auto max-w-4xl text-center">
+        <span className="eyebrow mx-auto">Pricing</span>
+        <h1 className="mt-6 text-[48px] md:text-[72px] leading-[0.98] tracking-tight text-ink font-semibold">
+          Simple plans.{" "}
+          <span className="serif-italic text-tangerine">Honest limits.</span>
+        </h1>
+        <p className="mt-6 max-w-xl mx-auto text-[17px] text-muted-warm">
+          Start free. Upgrade when your workspace outgrows it. No lock-in &mdash;
+          your projects stay yours either way.
+        </p>
 
-      {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 py-8 grid md:grid-cols-2 gap-8 items-center">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            Simple pricing our self building websites
-          </h1>
-          <p className="mt-4 text-slate-600 dark:text-slate-300 max-w-xl">
-            Pick a plan that fits your website — whether you’re testing a popup or scaling a national chain. Transparent billing, no surprise fees.
+        <div className="mt-9 inline-flex p-1 rounded-full bg-white/70 border border-[rgba(14,14,16,0.1)]">
+          {(["monthly", "yearly"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setBilling(v)}
+              aria-pressed={billing === v}
+              className={`px-4 py-2 rounded-full text-[13px] transition-colors ${
+                billing === v
+                  ? "bg-ink text-white"
+                  : "text-ink-2 hover:bg-[rgba(14,14,16,0.05)]"
+              }`}
+            >
+              {v === "monthly" ? "Monthly" : "Yearly · save 20%"}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="price-cards mx-auto max-w-6xl mt-16 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <article className="price-card rounded-[28px] bg-white/80 border border-[rgba(14,14,16,0.08)] p-8 md:p-10 flex flex-col">
+          <div className="flex items-center justify-between">
+            <span className="eyebrow">Starter</span>
+            <Icon icon="solar:leaf-bold" width={22} height={22} className="text-tangerine" />
+          </div>
+          <h2 className="mt-6 text-[40px] font-semibold text-ink leading-none">
+            Free
+          </h2>
+          <p className="mt-2 text-[14px] text-muted-warm">
+            For first projects and weekend builds.
           </p>
 
-          <div className="mt-6 flex items-center gap-4 bg-white dark:bg-[#061022] p-1 rounded-full w-max border">
-            <button
-              onClick={() => setBilling("monthly")}
-              className={`px-4 py-2 rounded-full text-sm transition ${billing === "monthly" ? 'bg-linear-to-r from-rose-500 to-yellow-400 text-white shadow' : 'text-slate-600 dark:text-slate-300'}`}
-              aria-pressed={billing === "monthly"}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBilling("yearly")}
-              className={`px-4 py-2 rounded-full text-sm transition ${billing === "yearly" ? 'bg-linear-to-r from-rose-500 to-yellow-400 text-white shadow' : 'text-slate-600 dark:text-slate-300'}`}
-              aria-pressed={billing === "yearly"}
-            >
-              Yearly (save 20%)
-            </button>
+          <ul className="mt-8 space-y-3 text-[14px] text-ink-2 flex-1">
+            {starterFeatures.map((f) => (
+              <li key={f} className="flex items-start gap-3">
+                <Icon icon="solar:check-circle-bold" width={18} height={18} className="text-tangerine mt-0.5 shrink-0" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-10 flex items-center gap-3">
+            <SignedOut>
+              <SignInButton>
+                <button className="inline-flex items-center gap-2 px-5 py-3 text-[14px] rounded-full border border-[rgba(14,14,16,0.14)] hover:bg-white">
+                  Start free
+                  <Icon icon="solar:arrow-right-linear" width={16} height={16} />
+                </button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-5 py-3 text-[14px] rounded-full border border-[rgba(14,14,16,0.14)] hover:bg-white"
+              >
+                Go to builder
+                <Icon icon="solar:arrow-right-linear" width={16} height={16} />
+              </Link>
+            </SignedIn>
+          </div>
+        </article>
+
+        <article className="price-card relative rounded-[28px] bg-ink text-white p-8 md:p-10 flex flex-col overflow-hidden">
+          <div
+            aria-hidden
+            className="absolute -top-32 -right-20 h-72 w-72 rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(255,91,46,0.5), transparent 65%)" }}
+          />
+          <div className="relative flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.14em] text-white/70">
+              <span className="h-1.5 w-1.5 rounded-full bg-tangerine" /> Pro
+            </span>
+            <Icon icon="solar:bolt-bold" width={22} height={22} className="text-tangerine" />
           </div>
 
-          <div className="mt-6 flex gap-3">
-            {/* GET STARTED -> Checkout for Starter plan */}
+          <div className="relative mt-6 flex items-baseline gap-2">
+            <span className="text-[40px] font-semibold leading-none">
+              ${billing === "monthly" ? 29 : 23}
+            </span>
+            <span className="text-[14px] text-white/60">
+              / {billing === "monthly" ? "month" : "month, billed yearly"}
+            </span>
+          </div>
+          <p className="relative mt-2 text-[14px] text-white/70">
+            For regular builders shipping real projects.
+          </p>
+
+          <ul className="relative mt-8 space-y-3 text-[14px] text-white/90 flex-1">
+            {proFeatures.map((f) => (
+              <li key={f} className="flex items-start gap-3">
+                <Icon icon="solar:check-circle-bold" width={18} height={18} className="text-tangerine mt-0.5 shrink-0" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="relative mt-10 flex items-center gap-3">
             <SignedIn>
-              <CheckoutButton
-                planId={STARTER_PLAN_ID}
-                planPeriod={billing === "monthly" ? "month" : "annual"}
-                // optional: newSubscriptionRedirectUrl="/dashboard"
-              >
-                <button className="inline-flex items-center text-l font-bold px-4 py-2 bg-rose-500 text-white rounded">Get started</button>
+              <CheckoutButton planId={PRO_PLAN_ID} planPeriod={period}>
+                <button className="btn-tangerine inline-flex items-center gap-2 px-5 py-3 text-[14px] font-medium">
+                  Upgrade to Pro
+                  <Icon icon="solar:arrow-right-linear" width={16} height={16} />
+                </button>
               </CheckoutButton>
             </SignedIn>
-
-            <a href="#compare" className="inline-flex items-center text-sm underline">Compare plans</a>
+            <SignedOut>
+              <SignInButton>
+                <button className="btn-tangerine inline-flex items-center gap-2 px-5 py-3 text-[14px] font-medium">
+                  Sign in to upgrade
+                  <Icon icon="solar:arrow-right-linear" width={16} height={16} />
+                </button>
+              </SignInButton>
+            </SignedOut>
           </div>
 
-          <ul className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-600 dark:text-slate-400">
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 mt-1 text-emerald-500" />
-              <span>30-day money back guarantee</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 mt-1 text-emerald-500" />
-              <span>PCI-compliant payments</span>
-            </li>
-          </ul>
+          <SignedIn>
+            {STARTER_PLAN_ID && (
+              <CheckoutButton planId={STARTER_PLAN_ID} planPeriod={period}>
+                <button className="relative mt-3 text-[12px] text-white/50 hover:text-white/80 self-start">
+                  Or pick Starter checkout &rarr;
+                </button>
+              </CheckoutButton>
+            )}
+          </SignedIn>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl mt-20">
+        <div className="hair-rule mb-10" />
+        <div className="flex items-end justify-between gap-6 mb-8">
+          <h2 className="text-[26px] md:text-[32px] font-semibold text-ink">
+            Full plan comparison
+          </h2>
+          <span className="text-[12px] text-muted-warm">Powered by Clerk Billing</span>
         </div>
-
-        <div className="relative order-first md:order-last">
-          <div className="rounded-2xl overflow-hidden shadow-lg bg-linear-to-br from-[#0f172a] to-[#071126] p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm opacity-75">Popular</div>
-                <div className="text-xl font-bold mt-2">Pro — Team</div>
-              </div>
-              <div className="text-right">
-                <div className="text-xs opacity-70">Starting at</div>
-                <div className="text-3xl font-extrabold">${billing === "monthly" ? 39 : 36}</div>
-                <div className="text-xs opacity-60">{billing === "monthly" ? "/mo" : "/yr"}</div>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 gap-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded bg-white/10 flex items-center justify-center">🍽️</div>
-                <div>
-                  <div className="text-sm font-semibold">Orders / month</div>
-                  <div className="text-xs opacity-80">Unlimited</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded bg-white/10 flex items-center justify-center">⚡</div>
-                <div>
-                  <div className="text-sm font-semibold">Priority support</div>
-                  <div className="text-xs opacity-80">1-hour response time</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex gap-3">
-              <SignedIn>
-                <CheckoutButton
-                  planId={PRO_PLAN_ID}
-                  planPeriod={billing === "monthly" ? "month" : "annual"}
-                >
-                  <button
-                    type="button"
-                    className="inline-flex items-center text-l font-bold px-4 py-2 bg-white text-slate-900 rounded cursor-pointer"
-                  >
-                    Start Trial
-                  </button>
-                </CheckoutButton>
-              </SignedIn>
-              <Button variant="ghost">Contact sales</Button>
-            </div>
-          </div>
-
-          {/* subtle decor */}
-          <div className="absolute -left-10 -bottom-10 w-48 h-48 rounded-full bg-rose-400 opacity-20 blur-3xl"></div>
+        <div className="rounded-[28px] bg-white/80 border border-[rgba(14,14,16,0.08)] p-6 md:p-8">
+          <ClerkPricingTable />
         </div>
       </section>
 
-      {/* Pricing cards */}
-      <section className="max-w-6xl mx-auto px-6 py-10">
-        <h2 className="text-2xl font-bold">Choose a plan</h2>
-        <p className="text-slate-600 dark:text-slate-400 mt-2">No contracts. Upgrade, downgrade, or cancel anytime.</p>
-
-        <div className="mt-8 grid gap-6 grid-cols-1 md:grid-cols-3">
-          <div className="rounded-2xl border p-6 bg-white dark:bg-[#041022]">
-            <div id="clerk-pricing-table">
-              <ClerkPricingTable />
+      <section className="faq-wrap mx-auto max-w-4xl mt-24">
+        <div className="hair-rule mb-10" />
+        <div className="mb-8">
+          <span className="eyebrow">FAQ</span>
+          <h2 className="mt-4 text-[30px] md:text-[38px] font-semibold text-ink">
+            Still thinking{" "}
+            <span className="serif-italic text-tangerine">about it?</span>
+          </h2>
+        </div>
+        <dl className="divide-y divide-[rgba(14,14,16,0.08)]">
+          {faqs.map((f) => (
+            <div key={f.q} className="faq-row py-6">
+              <dt className="text-[17px] font-semibold text-ink">{f.q}</dt>
+              <dd className="mt-2 text-[14px] text-muted-warm leading-relaxed">{f.a}</dd>
             </div>
-          </div>
-          {/* you can duplicate or layout as needed */}
-        </div>
-
-        <div id="compare" className="mt-10 bg-white dark:bg-[#041022] p-6 rounded-2xl">
-          <h4 className="font-semibold">Compare features</h4>
-          <div className="mt-4 overflow-auto">
-            {/* table omitted for brevity — keep your existing compare table */}
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <h4 className="font-extrabold text-2xl"> Compare our pricing</h4>
-          <div className="mt-4">
-            <ClerkPricingTable />
-          </div>
-        </div>
+          ))}
+        </dl>
       </section>
-
-      <footer className="mt-12 border-t pt-8 pb-12">
-        <div className="max-w-6xl mx-auto px-6 text-sm text-slate-600 dark:text-slate-400 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>© {new Date().getFullYear()} Harsha. All rights reserved.</div>
-          <div className="flex gap-4">
-            <a href="#" className="hover:underline">Terms</a>
-            <a href="#" className="hover:underline">Privacy</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
