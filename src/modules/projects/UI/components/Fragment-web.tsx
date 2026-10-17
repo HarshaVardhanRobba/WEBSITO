@@ -28,42 +28,44 @@ export function FragmentWeb({ data }: fragmentWebProps) {
 
 
     return (
-        <div className="flex flex-col gap-3 h-screen">
-            <div className="p-2 border-b bg-sidebar flex items-center gap-x-2">
+        <div className="flex flex-col gap-0 h-screen bg-white">
+            <div className="p-2 border-b border-[rgba(14,14,16,0.08)] bg-white flex items-center gap-x-2">
                 <Hint text="Refresh" side="left" align="start">
-                <Button 
-                    variant="secondary" size="sm" className="text-sm cursor-pointer"
+                <Button
+                    variant="ghost" size="sm" className="text-sm rounded-full border border-[rgba(14,14,16,0.1)] hover:bg-[rgba(14,14,16,0.03)]"
                     onClick={onRefresh}>
-                        <RefreshCcwIcon className="w-4 h-4 mr-2" />
+                        <RefreshCcwIcon className="w-3.5 h-3.5 mr-1.5" />
                     Refresh
                 </Button>
                 </Hint>
                 <Hint text="Copy link" side="right" align="start">
-                    <Button 
-                        variant="secondary" 
-                        size="sm" 
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={handleCopy}
                         disabled={!data.sandboxUrl|| copied}
-                        className="flex-1 justify-start text-start font-normal"
+                        className="flex-1 justify-start text-start font-normal rounded-full border border-[rgba(14,14,16,0.1)] hover:bg-[rgba(14,14,16,0.03)] text-ink-2"
                     >
-                        {copied ? "Copied!" : "Copy link"}
+                        <span className="text-tangerine mr-2 text-[11px] uppercase tracking-widest">
+                            {copied ? "Copied" : "URL"}
+                        </span>
                         <span className="truncate">
                             {data.sandboxUrl}
                         </span>
                     </Button>
                 </Hint>
                 <Hint text="Open in new tab" side="right" align="start">
-                    <Button 
+                    <Button
                         size="sm"
                         disabled={!data.sandboxUrl}
-                        variant="secondary"
-                        className="cursor-pointer"
+                        variant="ghost"
+                        className="rounded-full border border-[rgba(14,14,16,0.1)] hover:bg-[rgba(14,14,16,0.03)]"
                         onClick={() => {
-                            if (!data.sandboxUrl) return; 
+                            if (!data.sandboxUrl) return;
                             window.open(data.sandboxUrl, "_blank");
                         }}
                     >
-                        <ExternalLinkIcon className="w-4 h-4" />
+                        <ExternalLinkIcon className="w-3.5 h-3.5" />
                     </Button>
                 </Hint>
             </div>
